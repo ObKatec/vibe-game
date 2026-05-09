@@ -145,7 +145,7 @@ button:disabled {
 }
 
 .game-shell {
-  width: min(1320px, calc(100vw - 48px));
+  width: min(1440px, calc(100vw - 48px));
 }
 
 .ghost-button {
@@ -155,9 +155,14 @@ button:disabled {
   box-shadow: none;
 }
 
+.icon-button {
+  width: 44px;
+  padding: 0;
+}
+
 .game-layout {
   display: grid;
-  grid-template-columns: 270px minmax(0, 1fr);
+  grid-template-columns: 290px minmax(0, 1fr);
   gap: 18px;
   margin-top: 22px;
   align-items: stretch;
@@ -173,19 +178,24 @@ button:disabled {
   min-height: 680px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 22px;
 }
 
-.mode-summary,
-.score-grid div {
+.game-info p:not(.eyebrow) {
+  margin: 18px 0 0;
+  color: #c8ccef;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.best-card {
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.11);
   background: rgba(0, 0, 0, 0.2);
-  padding: 14px;
+  padding: 16px;
 }
 
-.mode-summary span,
-.score-grid span,
+.best-card span,
 .keymap dt {
   display: block;
   color: #94f9ff;
@@ -194,41 +204,18 @@ button:disabled {
   text-transform: uppercase;
 }
 
-.mode-summary strong {
+.best-card strong {
   display: block;
   margin-top: 8px;
-  font-size: 1.45rem;
+  font-size: 2.4rem;
+  line-height: 1;
 }
 
-.mode-summary small {
+.best-card small {
   display: block;
   margin-top: 8px;
   color: #aeb5db;
   font-weight: 700;
-  line-height: 1.4;
-}
-
-.score-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.score-grid div {
-  min-height: 92px;
-}
-
-.score-grid strong {
-  display: block;
-  margin-top: 8px;
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.action-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
 }
 
 .keymap {
@@ -245,7 +232,8 @@ button:disabled {
 .keymap dd {
   margin: 4px 0 0;
   color: #d3d8ff;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 1.05rem;
 }
 
 .arena-wrap {
@@ -264,6 +252,12 @@ button:disabled {
   margin: 8px 0 0;
   font-size: 2.05rem;
   letter-spacing: 0;
+}
+
+.arena-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .state-pill {
@@ -326,22 +320,35 @@ canvas {
   width: min(760px, 100%);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
-  background: rgba(10, 12, 31, 0.88);
+  background: rgba(10, 12, 31, 0.9);
   box-shadow: 0 0 60px rgba(255, 43, 214, 0.18), 0 0 46px rgba(0, 245, 255, 0.13);
   padding: 24px;
 }
 
 .start-inner h2 {
-  margin: 10px 0 8px;
+  margin: 10px 0 0;
   font-size: 2.2rem;
   letter-spacing: 0;
 }
 
-.panel-copy,
-.panel-actions p {
-  margin: 0;
-  color: #d3d8ff;
-  line-height: 1.55;
+.result-score {
+  margin-top: 18px;
+}
+
+.result-score span {
+  display: block;
+  color: #94f9ff;
+  font-size: 0.86rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.result-score strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 5.4rem;
+  line-height: 0.95;
+  text-shadow: 0 0 34px rgba(255, 43, 214, 0.48), 0 0 52px rgba(0, 245, 255, 0.28);
 }
 
 .mode-grid {
@@ -352,16 +359,14 @@ canvas {
 }
 
 .mode-card {
-  min-height: 116px;
+  min-height: 72px;
   padding: 15px;
   color: #f7fbff;
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.14);
   box-shadow: none;
-  justify-content: flex-start;
-  align-items: flex-start;
-  flex-direction: column;
-  text-align: left;
+  justify-content: center;
+  text-align: center;
 }
 
 .mode-card.active {
@@ -372,16 +377,8 @@ canvas {
 
 .mode-card span {
   display: block;
-  font-size: 1.06rem;
+  font-size: 1.12rem;
   font-weight: 900;
-}
-
-.mode-card small {
-  display: block;
-  margin-top: 8px;
-  color: #aeb5db;
-  font-weight: 700;
-  line-height: 1.35;
 }
 
 .panel-actions {
@@ -389,6 +386,12 @@ canvas {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.panel-actions p {
+  margin: 0;
+  color: #d3d8ff;
+  line-height: 1.55;
 }
 
 .panel-actions strong {
