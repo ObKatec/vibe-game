@@ -15,8 +15,15 @@ type Ball = {
   hue: number;
 };
 
+type Player = {
+  x: number;
+  y: number;
+  r: number;
+  angle: number;
+};
+
 type GameState = {
-  player: { x: number; y: number; r: number };
+  player: Player;
   balls: Ball[];
   elapsed: number;
   nextSpawn: number;
@@ -56,7 +63,7 @@ function createBall(index: number, config: (typeof difficulties)[DifficultyKey],
 }
 
 function newGame(config: (typeof difficulties)[DifficultyKey]): GameState {
-  const player = { x: ARENA.width / 2, y: ARENA.height / 2, r: 16 };
+  const player: Player = { x: ARENA.width / 2, y: ARENA.height / 2, r: 16, angle: 0 };
   return {
     player,
     balls: Array.from({ length: config.balls }, (_, index) => createBall(index, config, player.x, player.y)),
@@ -118,6 +125,7 @@ function drawArena(ctx: CanvasRenderingContext2D, game: GameState, score: number
   const { player } = game;
   ctx.save();
   ctx.translate(player.x, player.y);
+  ctx.rotate(player.angle);
   ctx.shadowColor = '#00f5ff';
   ctx.shadowBlur = 20;
   ctx.fillStyle = '#d8fdff';
@@ -204,6 +212,7 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
   const config = useMemo(() => difficulties[difficulty], [difficulty]);
+  const canSelectDifficulty = playState === 'ready' || playState === 'ended';
 
   useEffect(() => {
     difficultyRef.current = difficulty;
@@ -289,8 +298,11 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
         if (keys.has('s') || keys.has('arrowdown')) dy += 1;
         if (dx || dy) {
           const len = Math.hypot(dx, dy);
-          current.player.x += (dx / len) * currentConfig.shipSpeed * dt;
-          current.player.y += (dy / len) * currentConfig.shipSpeed * dt;
+          const nx = dx / len;
+          const ny = dy / len;
+          current.player.x += nx * currentConfig.shipSpeed * dt;
+          current.player.y += ny * currentConfig.shipSpeed * dt;
+          current.player.angle = Math.atan2(ny, nx) + Math.PI / 2;
         }
         current.player.x = Math.max(28, Math.min(ARENA.width - 28, current.player.x));
         current.player.y = Math.max(30, Math.min(ARENA.height - 30, current.player.y));
@@ -343,7 +355,7 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
           <p className="eyebrow"><Sparkles size={16} /> Select difficulty</p>
           <div className="difficulty-list">
             {(Object.keys(difficulties) as DifficultyKey[]).map((key) => (
-              <button className={key === difficulty ? 'difficulty active' : 'difficulty'} type="button" key={key} onClick={() => setDifficulty(key)} disabled={playState === 'running'}>
+              <button className={key === difficulty ? 'difficulty active' : 'difficulty'} type="button" key={key} onClick={() => setDifficulty(key)} disabled={!canSelectDifficulty}>
                 <span>{difficulties[key].label}</span>
                 <small>{difficulties[key].detail}</small>
               </button>
