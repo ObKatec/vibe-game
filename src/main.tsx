@@ -148,17 +148,16 @@ function drawArena(ctx: CanvasRenderingContext2D, game: GameState, score: number
   ctx.font = '800 18px Inter, system-ui, sans-serif';
   ctx.fillText(`SCORE ${score}`, 28, 42);
 
-  if (state !== 'running') {
+  if (state === 'paused') {
     ctx.fillStyle = 'rgba(7, 7, 20, 0.58)';
     ctx.fillRect(0, 0, ARENA.width, ARENA.height);
     ctx.textAlign = 'center';
     ctx.fillStyle = '#f7fbff';
     ctx.font = '900 42px Inter, system-ui, sans-serif';
-    const label = state === 'ended' ? 'GAME OVER' : state === 'paused' ? 'PAUSED' : 'READY';
-    ctx.fillText(label, ARENA.width / 2, ARENA.height / 2 - 10);
+    ctx.fillText('PAUSED', ARENA.width / 2, ARENA.height / 2 - 8);
     ctx.font = '700 16px Inter, system-ui, sans-serif';
     ctx.fillStyle = '#94f9ff';
-    ctx.fillText('Press Space to fly. WASD or Arrow Keys to move. R to restart.', ARENA.width / 2, ARENA.height / 2 + 28);
+    ctx.fillText('Press Space to continue. R to restart.', ARENA.width / 2, ARENA.height / 2 + 30);
     ctx.textAlign = 'left';
   }
 }
@@ -212,7 +211,7 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
   const config = useMemo(() => difficulties[difficulty], [difficulty]);
-  const canSelectDifficulty = playState === 'ready' || playState === 'ended';
+  const showDifficultyOverlay = playState === 'ready' || playState === 'ended';
 
   useEffect(() => {
     difficultyRef.current = difficulty;
@@ -243,16 +242,23 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
     setPlayState(nextState);
   };
 
+  const startRun = () => resetRun('running');
+
+  const selectDifficulty = (nextDifficulty: DifficultyKey) => {
+    if (!showDifficultyOverlay) return;
+    setDifficulty(nextDifficulty);
+  };
+
   const togglePlay = () => {
     if (stateRef.current === 'running') {
       setPlayState('paused');
       return;
     }
-    if (stateRef.current === 'ended') {
-      resetRun('running');
+    if (stateRef.current === 'paused') {
+      setPlayState('running');
       return;
     }
-    setPlayState('running');
+    resetRun('running');
   };
 
   useEffect(() => {
@@ -352,14 +358,11 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
 
       <section className="game-layout">
         <aside className="control-panel" aria-label="Neon Dodge controls">
-          <p className="eyebrow"><Sparkles size={16} /> Select difficulty</p>
-          <div className="difficulty-list">
-            {(Object.keys(difficulties) as DifficultyKey[]).map((key) => (
-              <button className={key === difficulty ? 'difficulty active' : 'difficulty'} type="button" key={key} onClick={() => setDifficulty(key)} disabled={!canSelectDifficulty}>
-                <span>{difficulties[key].label}</span>
-                <small>{difficulties[key].detail}</small>
-              </button>
-            ))}
+          <p className="eyebrow"><Sparkles size={16} /> Neon Dodge</p>
+          <div className="mode-summary">
+            <span>Selected</span>
+            <strong>{config.label}</strong>
+            <small>{config.detail}</small>
           </div>
 
           <div className="score-grid">
@@ -387,7 +390,40 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
             </div>
             <span className={`state-pill ${playState}`}>{playState}</span>
           </div>
-          <canvas ref={canvasRef} width={ARENA.width} height={ARENA.height} aria-label="Neon Dodge canvas" />
+          <div className="stage">
+            <canvas ref={canvasRef} width={ARENA.width} height={ARENA.height} aria-label="Neon Dodge canvas" />
+            {showDifficultyOverlay && (
+              <div className="start-panel" aria-label="Choose Neon Dodge difficulty">
+                <div className="start-inner">
+                  <p className="eyebrow"><Sparkles size={16} /> {playState === 'ended' ? 'Run complete' : 'Choose your run'}</p>
+                  <h2>{playState === 'ended' ? 'Try another lane.' : 'Select difficulty before launch.'}</h2>
+                  <p className="panel-copy">
+                    {playState === 'ended'
+                      ? `Score ${score}. Best ${best} on ${config.label}. Pick a difficulty, then launch again.`
+                      : 'The mode locks once the run begins. You can change it again after the game ends.'}
+                  </p>
+                  <div className="mode-grid" role="group" aria-label="Difficulty options">
+                    {(Object.keys(difficulties) as DifficultyKey[]).map((key) => (
+                      <button
+                        className={key === difficulty ? 'mode-card active' : 'mode-card'}
+                        type="button"
+                        key={key}
+                        aria-pressed={key === difficulty}
+                        onClick={() => selectDifficulty(key)}
+                      >
+                        <span>{difficulties[key].label}</span>
+                        <small>{difficulties[key].detail}</small>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="panel-actions">
+                    <p>Selected: <strong>{config.label}</strong></p>
+                    <button type="button" onClick={startRun}><Play size={18} /> {playState === 'ended' ? 'Run Again' : 'Start Run'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </section>
       </section>
     </main>
