@@ -357,27 +357,21 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
       </nav>
 
       <section className="game-layout">
-        <aside className="control-panel" aria-label="Neon Dodge controls">
-          <p className="eyebrow"><Sparkles size={16} /> Neon Dodge</p>
-          <div className="mode-summary">
-            <span>Selected</span>
-            <strong>{config.label}</strong>
-            <small>{config.detail}</small>
+        <aside className="control-panel" aria-label="Neon Dodge information">
+          <div className="game-info">
+            <p className="eyebrow"><Sparkles size={16} /> Neon Dodge</p>
+            <p>Pilot a neon ship through ricocheting energy balls. Pick a lane before launch, then survive as long as you can.</p>
           </div>
 
-          <div className="score-grid">
-            <div><span>Score</span><strong>{score}</strong></div>
-            <div><span>Best</span><strong>{best}</strong></div>
-          </div>
-
-          <div className="action-row">
-            <button type="button" onClick={togglePlay}>{playState === 'running' ? <Pause size={18} /> : <Play size={18} />} {playState === 'running' ? 'Pause' : 'Start'}</button>
-            <button className="ghost-button" type="button" onClick={() => resetRun('running')}><RotateCcw size={18} /> Restart</button>
+          <div className="best-card">
+            <span>Best</span>
+            <strong>{best}</strong>
+            <small>{config.label} mode</small>
           </div>
 
           <dl className="keymap">
             <div><dt>Move</dt><dd>WASD / Arrow keys</dd></div>
-            <div><dt>Start</dt><dd>Space</dd></div>
+            <div><dt>Start / Pause</dt><dd>Space</dd></div>
             <div><dt>Restart</dt><dd>R</dd></div>
           </dl>
         </aside>
@@ -388,7 +382,11 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
               <p className="status">{config.label} mode</p>
               <h1>Outfly the neon storm.</h1>
             </div>
-            <span className={`state-pill ${playState}`}>{playState}</span>
+            <div className="arena-actions">
+              <button type="button" onClick={togglePlay}>{playState === 'running' ? <Pause size={18} /> : <Play size={18} />} {playState === 'running' ? 'Pause' : 'Start'}</button>
+              <button className="ghost-button icon-button" type="button" aria-label="Restart" onClick={() => resetRun('running')}><RotateCcw size={18} /></button>
+              <span className={`state-pill ${playState}`}>{playState}</span>
+            </div>
           </div>
           <div className="stage">
             <canvas ref={canvasRef} width={ARENA.width} height={ARENA.height} aria-label="Neon Dodge canvas" />
@@ -396,12 +394,14 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
               <div className="start-panel" aria-label="Choose Neon Dodge difficulty">
                 <div className="start-inner">
                   <p className="eyebrow"><Sparkles size={16} /> {playState === 'ended' ? 'Run complete' : 'Choose your run'}</p>
-                  <h2>{playState === 'ended' ? 'Try another lane.' : 'Select difficulty before launch.'}</h2>
-                  <p className="panel-copy">
-                    {playState === 'ended'
-                      ? `Score ${score}. Best ${best} on ${config.label}. Pick a difficulty, then launch again.`
-                      : 'The mode locks once the run begins. You can change it again after the game ends.'}
-                  </p>
+                  {playState === 'ended' ? (
+                    <div className="result-score">
+                      <span>Score</span>
+                      <strong>{score}</strong>
+                    </div>
+                  ) : (
+                    <h2>Select difficulty before launch.</h2>
+                  )}
                   <div className="mode-grid" role="group" aria-label="Difficulty options">
                     {(Object.keys(difficulties) as DifficultyKey[]).map((key) => (
                       <button
@@ -412,7 +412,6 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
                         onClick={() => selectDifficulty(key)}
                       >
                         <span>{difficulties[key].label}</span>
-                        <small>{difficulties[key].detail}</small>
                       </button>
                     ))}
                   </div>
