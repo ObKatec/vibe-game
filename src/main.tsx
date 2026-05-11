@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ArrowLeft, Gamepad2, Pause, Play, RotateCcw, Shield, Sparkles, Swords, UserRound } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Pause, Play, RotateCcw, Sparkles, UserRound } from 'lucide-react';
 import './styles.css';
 
 type DifficultyKey = 'easy' | 'normal' | 'hard';
@@ -8,6 +8,7 @@ type PlayState = 'ready' | 'running' | 'paused' | 'ended';
 type BallKind = 'linear' | 'curve' | 'pulse';
 type PowerUpKind = 'shield' | 'attack';
 type EffectKind = 'shield' | 'attack';
+type MovementKey = 'up' | 'down' | 'left' | 'right';
 
 type DifficultyConfig = {
   label: string;
@@ -19,6 +20,7 @@ type DifficultyConfig = {
   spawnEvery: number;
   speedRampSeconds: number;
   powerUpEvery: number;
+  shipSpeed: number;
   typeWeights: Record<BallKind, number>;
 };
 
@@ -75,6 +77,17 @@ type GameState = {
 };
 
 const ARENA = { width: 920, height: 540 };
+const emptyMovement = (): Record<MovementKey, boolean> => ({ up: false, down: false, left: false, right: false });
+const movementKeyByCode: Record<string, MovementKey> = {
+  KeyW: 'up',
+  ArrowUp: 'up',
+  KeyS: 'down',
+  ArrowDown: 'down',
+  KeyA: 'left',
+  ArrowLeft: 'left',
+  KeyD: 'right',
+  ArrowRight: 'right',
+};
 
 const difficulties: Record<DifficultyKey, DifficultyConfig> = {
   easy: {
@@ -87,6 +100,7 @@ const difficulties: Record<DifficultyKey, DifficultyConfig> = {
     spawnEvery: 12,
     speedRampSeconds: 90,
     powerUpEvery: 10,
+    shipSpeed: 340,
     typeWeights: { linear: 7, curve: 2, pulse: 1 },
   },
   normal: {
@@ -99,6 +113,7 @@ const difficulties: Record<DifficultyKey, DifficultyConfig> = {
     spawnEvery: 8,
     speedRampSeconds: 75,
     powerUpEvery: 12,
+    shipSpeed: 360,
     typeWeights: { linear: 4, curve: 3, pulse: 3 },
   },
   hard: {
@@ -111,6 +126,7 @@ const difficulties: Record<DifficultyKey, DifficultyConfig> = {
     spawnEvery: 5,
     speedRampSeconds: 60,
     powerUpEvery: 15,
+    shipSpeed: 380,
     typeWeights: { linear: 2, curve: 4, pulse: 4 },
   },
 };
@@ -429,7 +445,7 @@ function App() {
 
 function NeonDodge({ onBack }: { onBack: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const keysRef = useRef<Set<string>>(new Set());
+  const movementRef = useRef<Record<MovementKey, boolean>>(emptyMovement());
   const gameRef = useRef<GameState>(newGame(difficulties.normal));
   const stateRef = useRef<PlayState>('ready');
   const difficultyRef = useRef<DifficultyKey>('normal');
@@ -447,12 +463,16 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
     const stored = Number(localStorage.getItem(`neon-dodge-best-${difficulty}`) || 0);
     setBest(stored);
     gameRef.current = newGame(difficulties[difficulty]);
+    movementRef.current = emptyMovement();
     setScore(0);
     setPlayState('ready');
   }, [difficulty]);
 
   useEffect(() => {
     stateRef.current = playState;
+    if (playState !== 'running') {
+      movementRef.current = emptyMovement();
+    }
   }, [playState]);
 
   const finishRun = (finalScore: number) => {
@@ -462,11 +482,13 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
       localStorage.setItem(key, String(finalScore));
       setBest(finalScore);
     }
+    movementRef.current = emptyMovement();
     setPlayState('ended');
   };
 
   const resetRun = (nextState: PlayState = 'ready') => {
     gameRef.current = newGame(difficulties[difficultyRef.current]);
+    movementRef.current = emptyMovement();
     setScore(0);
     setPlayState(nextState);
   };
@@ -499,20 +521,37 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
   };
 
   useEffect(() => {
-    const down = (event: KeyboardEvent) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Spacebar'].includes(event.key)) {
-        event.preventDefault();
-      }
-      if (event.key === ' ' || event.key === 'Spacebar') togglePlay();
-      if (event.key.toLowerCase() === 'r') resetRun('running');
-      keysRef.current.add(event.key.toLowerCase());
+    const clearMovement = () => {
+      movementRef.current = emptyMovement();
     };
-    const up = (event: KeyboardEvent) => keysRef.current.delete(event.key.toLowerCase());
+    const down = (event: KeyboardEvent) => {
+      const movement = movementKeyByCode[event.code];
+      if (movement) {
+        event.preventDefault();
+        movementRef.current[movement] = true;
+        return;
+      }
+      if (event.code === 'Space' && !event.repeat) {
+        event.preventDefault();
+        togglePlay();
+      }
+      if (event.code === 'KeyR' && !event.repeat) resetRun('running');
+    };
+    const up = (event: KeyboardEvent) => {
+      const movement = movementKeyByCode[event.code];
+      if (!movement) return;
+      event.preventDefault();
+      movementRef.current[movement] = false;
+    };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
+    window.addEventListener('blur', clearMovement);
+    document.addEventListener('visibilitychange', clearMovement);
     return () => {
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', clearMovement);
+      document.removeEventListener('visibilitychange', clearMovement);
     };
   }, []);
 
@@ -532,13 +571,13 @@ function NeonDodge({ onBack }: { onBack: () => void }) {
       const currentConfig = difficulties[difficultyRef.current];
 
       if (currentState === 'running') {
-        const keys = keysRef.current;
+        const movement = movementRef.current;
         let dx = 0;
         let dy = 0;
-        if (keys.has('a') || keys.has('arrowleft')) dx -= 1;
-        if (keys.has('d') || keys.has('arrowright')) dx += 1;
-        if (keys.has('w') || keys.has('arrowup')) dy -= 1;
-        if (keys.has('s') || keys.has('arrowdown')) dy += 1;
+        if (movement.left) dx -= 1;
+        if (movement.right) dx += 1;
+        if (movement.up) dy -= 1;
+        if (movement.down) dy += 1;
         if (dx || dy) {
           const len = Math.hypot(dx, dy);
           const nx = dx / len;
