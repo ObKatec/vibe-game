@@ -514,6 +514,7 @@ export function NeonBreaker({ onBack }: { onBack: () => void }) {
   const [playState, setPlayState] = useState<BreakerPlayState>('ready');
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
+  const [selectedLevel, setSelectedLevel] = useState(1);
   const [bestLevel, setBestLevel] = useState(1);
   const showOverlay = playState === 'ready' || playState === 'cleared' || playState === 'ended';
 
@@ -539,7 +540,8 @@ export function NeonBreaker({ onBack }: { onBack: () => void }) {
   };
 
   const resetRun = () => {
-    gameRef.current = newBreakerGame(1, 0, 3);
+    const nextLevel = Math.max(1, Math.min(99, Math.round(selectedLevel || 1)));
+    gameRef.current = newBreakerGame(nextLevel, 0, 3);
     keysRef.current = emptyHorizontal();
     syncHud();
     setPlayState('ready');
@@ -548,10 +550,21 @@ export function NeonBreaker({ onBack }: { onBack: () => void }) {
   const startRun = () => {
     if (stateRef.current === 'cleared') {
       const current = gameRef.current;
-      gameRef.current = newBreakerGame(current.level + 1, current.score + current.lives * 100, current.lives);
+      const nextLevel = current.level + 1;
+      gameRef.current = newBreakerGame(nextLevel, current.score + current.lives * 100, current.lives);
+      setSelectedLevel(nextLevel);
       syncHud();
     }
     setPlayState('running');
+  };
+
+  const chooseLevel = (nextLevel: number) => {
+    const safeLevel = Math.max(1, Math.min(99, Math.round(nextLevel || 1)));
+    setSelectedLevel(safeLevel);
+    gameRef.current = newBreakerGame(safeLevel, 0, 3);
+    keysRef.current = emptyHorizontal();
+    syncHud();
+    setPlayState('ready');
   };
 
   const togglePlay = () => {
@@ -806,6 +819,7 @@ export function NeonBreaker({ onBack }: { onBack: () => void }) {
             <div><dt>Move</dt><dd>A / D / Arrow keys</dd></div>
             <div><dt>Launch / Pause</dt><dd>Space</dd></div>
             <div><dt>Restart</dt><dd>R</dd></div>
+            <div><dt>Level Select</dt><dd>Before or after a run</dd></div>
             <div><dt>Goal</dt><dd>Clear every destructible brick</dd></div>
           </dl>
         </aside>
@@ -841,6 +855,29 @@ export function NeonBreaker({ onBack }: { onBack: () => void }) {
                       <strong>{level}</strong>
                     </div>
                   )}
+                  <div className="level-picker" aria-label="Choose Neon Breaker level">
+                    <label htmlFor="breaker-level-select">Choose level</label>
+                    <div className="level-picker-row">
+                      <input
+                        id="breaker-level-select"
+                        type="number"
+                        min="1"
+                        max="99"
+                        value={selectedLevel}
+                        onChange={(event) => chooseLevel(Number(event.target.value))}
+                      />
+                      {[1, 5, 10, 15, 20].map((quickLevel) => (
+                        <button
+                          className={selectedLevel === quickLevel ? 'level-chip active' : 'level-chip'}
+                          type="button"
+                          key={quickLevel}
+                          onClick={() => chooseLevel(quickLevel)}
+                        >
+                          L{quickLevel}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="panel-actions">
                     <p>Score: <strong>{score}</strong> / Best Level: <strong>{bestLevel}</strong></p>
                     <button type="button" onClick={playState === 'ended' ? resetRun : startRun}><Play size={18} /> {playState === 'cleared' ? 'Next Level' : playState === 'ended' ? 'Run Again' : 'Start Run'}</button>
