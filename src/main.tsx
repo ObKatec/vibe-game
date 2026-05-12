@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ArrowLeft, Gamepad2, Pause, Play, RotateCcw, Sparkles, UserRound } from 'lucide-react';
 import './styles.css';
+import { NeonBreaker } from './NeonBreaker';
 
 type DifficultyKey = 'easy' | 'normal' | 'hard';
 type PlayState = 'ready' | 'running' | 'paused' | 'ended';
@@ -139,7 +140,7 @@ const ballStyle: Record<BallKind, { hue: number; label: string }> = {
 
 const games = [
   { title: 'Neon Dodge', status: 'Playable', description: 'Pilot a neon ship through ricocheting energy balls across selectable difficulty lanes.' },
-  { title: 'Pulse Click', status: 'Planned', description: 'Hit the signal at the exact neon beat.' },
+  { title: 'Neon Breaker', status: 'Playable', description: 'Break through neon brick formations with durable blocks, special textures, and level-based layouts.' },
   { title: 'Memory Grid', status: 'Planned', description: 'Flip, remember, and clear the arcade board.' },
 ];
 
@@ -411,6 +412,9 @@ function App() {
   if (activeGame === 'Neon Dodge') {
     return <NeonDodge onBack={() => setActiveGame(null)} />;
   }
+  if (activeGame === 'Neon Breaker') {
+    return <NeonBreaker onBack={() => setActiveGame(null)} />;
+  }
 
   return (
     <main className="shell">
@@ -433,7 +437,7 @@ function App() {
               <h2>{game.title}</h2>
               <p>{game.description}</p>
             </div>
-            <button type="button" onClick={() => game.title === 'Neon Dodge' && setActiveGame(game.title)} disabled={game.status !== 'Playable'}>
+            <button type="button" onClick={() => game.status === 'Playable' && setActiveGame(game.title)} disabled={game.status !== 'Playable'}>
               {game.status === 'Playable' ? 'Play' : 'Soon'}
             </button>
           </article>

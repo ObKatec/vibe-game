@@ -283,6 +283,11 @@ button:disabled {
   color: #ffe074;
 }
 
+.state-pill.cleared {
+  border-color: rgba(0, 245, 255, 0.72);
+  color: #94f9ff;
+}
+
 .state-pill.ended {
   border-color: rgba(255, 43, 214, 0.72);
   color: #ff8ff0;
