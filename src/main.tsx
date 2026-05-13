@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { ArrowLeft, Gamepad2, Pause, Play, RotateCcw, Sparkles, UserRound } from 'lucide-react';
 import './styles.css';
 import { NeonBreaker } from './NeonBreaker';
+import { BattleRunner } from './BattleRunner';
 
 type DifficultyKey = 'easy' | 'normal' | 'hard';
 type PlayState = 'ready' | 'running' | 'paused' | 'ended';
@@ -141,6 +142,7 @@ const ballStyle: Record<BallKind, { hue: number; label: string }> = {
 const games = [
   { title: 'Neon Dodge', status: 'Playable', description: 'Pilot a neon ship through ricocheting energy balls across selectable difficulty lanes.' },
   { title: 'Neon Breaker', status: 'Playable', description: 'Break through neon brick formations with durable blocks, special textures, and level-based layouts.' },
+  { title: 'Battle Runner', status: 'Playable', description: 'Swipe between power gates, collect weapons, and spend squad strength against numbered enemies.' },
   { title: 'Memory Grid', status: 'Planned', description: 'Flip, remember, and clear the arcade board.' },
 ];
 
@@ -414,6 +416,9 @@ function App() {
   }
   if (activeGame === 'Neon Breaker') {
     return <NeonBreaker onBack={() => setActiveGame(null)} />;
+  }
+  if (activeGame === 'Battle Runner') {
+    return <BattleRunner onBack={() => setActiveGame(null)} />;
   }
 
   return (

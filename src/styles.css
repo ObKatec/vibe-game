@@ -116,7 +116,7 @@ button:disabled {
 
 .library {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
 }
 
@@ -301,6 +301,14 @@ button:disabled {
   margin: 0 auto;
 }
 
+.runner-stage {
+  position: relative;
+  width: min(100%, 450px);
+  aspect-ratio: 9 / 16;
+  margin: 0 auto;
+  touch-action: none;
+}
+
 canvas {
   display: block;
   width: 100%;
@@ -319,6 +327,24 @@ canvas {
   padding: 34px;
   border-radius: 8px;
   background: rgba(7, 7, 20, 0.66);
+}
+
+.runner-start-panel {
+  padding: 18px;
+}
+
+.runner-start-panel .start-inner {
+  padding: 20px;
+}
+
+.runner-start-panel .start-inner h2 {
+  font-size: 1.72rem;
+}
+
+.runner-start-panel .panel-actions {
+  align-items: stretch;
+  flex-direction: column;
+  margin-top: 20px;
 }
 
 .start-inner {
