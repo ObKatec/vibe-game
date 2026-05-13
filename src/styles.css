@@ -283,6 +283,11 @@ button:disabled {
   color: #ffe074;
 }
 
+.state-pill.cleared {
+  border-color: rgba(0, 245, 255, 0.72);
+  color: #94f9ff;
+}
+
 .state-pill.ended {
   border-color: rgba(255, 43, 214, 0.72);
   color: #ff8ff0;
@@ -379,6 +384,52 @@ canvas {
   display: block;
   font-size: 1.12rem;
   font-weight: 900;
+}
+
+.level-picker {
+  margin: 20px 0;
+}
+
+.level-picker label {
+  display: block;
+  margin-bottom: 10px;
+  color: #94f9ff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.level-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.level-picker input {
+  width: 92px;
+  min-height: 44px;
+  border: 1px solid rgba(148, 249, 255, 0.42);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f7fbff;
+  font: inherit;
+  font-weight: 900;
+  padding: 0 12px;
+}
+
+.level-chip {
+  min-height: 40px;
+  padding: 0 12px;
+  color: #f7fbff;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(148, 249, 255, 0.28);
+  box-shadow: none;
+}
+
+.level-chip.active {
+  color: #031116;
+  background: #00f5ff;
+  border-color: rgba(0, 245, 255, 0.82);
 }
 
 .panel-actions {
